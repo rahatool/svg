@@ -63,7 +63,7 @@ let QRCodeModel = class {
 	}
 	getModuleCount() {
 		return this.moduleCount;
-	},
+	}
 	make() {
 		this.makeImpl(false, this.getBestMaskPattern());
 	}
