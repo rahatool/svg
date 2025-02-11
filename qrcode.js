@@ -666,6 +666,7 @@ let check = (condition, message) => {
 
 export let QRCode = class {
 	static generate({
+		message = '',
 		size = 256,
 		padding = 16,
 		swap = false, /* swap the X and Y modules, some users have had issues with the QR Code */
