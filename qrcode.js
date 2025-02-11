@@ -667,27 +667,29 @@ let check = (condition, message) => {
 export let QRCode = class {
 	constructor(options) {
 		this.options = {
-			dim: 256,
-			pad: 16,
-			swp: 0, /* swap the X and Y modules, some users have had issues with the QR Code */
+			size: 256,
+			padding: 16,
+			swap: 0, /* swap the X and Y modules, some users have had issues with the QR Code */
 			ecl: 'M',
-			pal: ['#900', '#fff8f8']
+			foreground: '#900',
+			background: '#fff8f8',
 		};
 		if (options) {
 			for (let i in options) {
 				this.options[i] = options[i];
 			}
 		}
-		if (1 !== this.options.swp) {
-			this.options.swp = 0;
+		if (1 !== this.options.swap) {
+			this.options.swap = 0;
 		}
-		check(typeof this.options.msg == 'string', '"message" must be string');
-		check(this.options.msg.length, '"message" must not be empty');
+		check(typeof this.options.message == 'string', '"message" must be string');
+		check(this.options.message.length, '"message" must not be empty');
 		/* 7089 >= this.options.content.length */
-		check(this.options.dim > 0, '"dim" value must be higher than zero');
-		check(this.options.pad >= 0, '"pad" value must be non-negative');
-		check(this.options.dim > this.options.pad, '"pad" value must not be more than "dim" value');
-		check(_checkColor(this.options.pal[0]) && (!this.options.pal[1] || _checkColor(this.options.pal[1])), '"pal" value for foreground and/or background is not valid');
+		check(this.options.size > 0, '"size" value must be higher than zero');
+		check(this.options.padding >= 0, '"padding" value must be non-negative');
+		check(this.options.size > this.options.padding, '"padding" value must not be more than "size" value');
+		check(_checkColor(this.options.foreground), '"foreground" value is not valid');
+		check(!this.options.background || _checkColor(this.options.background), '"background" value is not valid');
 		function _checkColor(c) {
 			return /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(c);
 		}
@@ -702,14 +704,13 @@ export let QRCode = class {
 			case 'H':
 				return QRErrorCorrectLevel.H;
 			default:
-				console.warn('Unknwon error correction level: ' + ecl + '\nQRErrorCorrectLevel.L was used instead');
-				return QRErrorCorrectLevel.L;
+				throw new Error(`unknwon error correction level: ${ecl}`);
 			}
 		}
-		function _getTypeNumber(msg, ecl) {
+		function _getTypeNumber(message, ecl) {
 			let type = 1,
 				limit = 0,
-				l1 = _getUTF8Length(msg),
+				l1 = _getUTF8Length(message),
 				l2 = QRCodeLimitLength.length;
 			for (let i = 0; i <= l2; i++) {
 				let table = QRCodeLimitLength[i];
@@ -742,47 +743,41 @@ export let QRCode = class {
 
 			return type;
 		}
-		function _getUTF8Length(msg) {
-			let res = encodeURI(msg).toString().replace(/\%[0-9a-fA-F]{2}/g, 'a');
-			return res.length + (res.length != msg ? 3 : 0);
+		function _getUTF8Length(message) {
+			let res = encodeURI(message).toString().replace(/\%[0-9a-fA-F]{2}/g, 'a');
+			return res.length + (res.length != message ? 3 : 0);
 		}
 		
 		// Generate QR Code matrix
-		let msg = this.options.msg,
+		let message = this.options.message,
 			ecl = _getErrorCorrectLevel(this.options.ecl),
-			type = _getTypeNumber(msg, this.options.ecl);
+			type = _getTypeNumber(message, this.options.ecl);
 		this.qrcode = new QRCodeModel(type, ecl);
-		this.qrcode.addData(msg);
+		this.qrcode.addData(message);
 		this.qrcode.make();
 	}
 
-	// generates QRCode as SVG image
-	svg() {
-		let el = (n, a = {}) => {
-			n = document.createElementNS(ns, n);
-			for (let o in a) {
-				n.setAttribute(o, a[o]);
-			}
-			return n;
-		};
+	generate() {
 		let ns = 'http://www.w3.org/2000/svg';
-		let opt = this.options,
-			bit = this.qrcode.modules,
-			len = bit.length,
-			swp = opt.swp,
-			_fg = opt.pal[0],
-			_bg = opt.pal[1],
-			_d = opt.dim,
-			_p = (opt.pad > _d) ? _d : opt.pad,
-			_s = ((_d - (2 * _p)) / len).toFixed(4),
-			_m = [_s, 0, 0, _s, _p, _p],
+		let el = (element, attributes = {}) => {
+			element = document.createElementNS(ns, element);
+			for (let key in attributes) {
+				element.setAttribute(key, attributes[key]);
+			}
+			return element;
+		};
+		let bit = this.qrcode.modules,
+			length = bit.length,
+			{swap, foreground, background, size, padding} = this.options,
+			_s = ((size - (2 * padding)) / length).toFixed(4),
+			_m = [_s, 0, 0, _s, padding, padding],
 			_path = '';
-		for (let y = 0; y < len; y++) {
-			for (let x = 0; x < len; x++) {
+		for (let y = 0; y < length; y++) {
+			for (let x = 0; x < length; x++) {
 				if (bit[x][y]) {
 					let _y = y,
 						_x = x;
-					if (swp) {
+					if (swap) {
 						_y = x,
 						_x = y;
 					}
@@ -791,19 +786,20 @@ export let QRCode = class {
 			}
 		}
 		let output = el('svg', {
-			'viewBox': [0, 0, _d, _d].join(' '),
-			'width': _d,
-			'height': _d,
-			'fill': _fg,
+			'viewBox': [0, 0, size, size].join(' '),
+			'width': size,
+			'height': size,
+			'fill': foreground,
 			'shape-rendering': 'crispEdges',
 			'xmlns': ns,
 			'version': '1.1'
 		});
-		if (_bg)
+		if (background) {
 			output.append(el('path', {
-				'fill': _bg,
-				'd': 'M0,0V' + _d + 'H' + _d + 'V0H0Z'
+				'fill': background,
+				'd': 'M0,0V' + size + 'H' + size + 'V0H0Z'
 			}));
+		}
 		output.append(el('path', {
 			'transform': 'matrix(' + _m + ')',
 			'd': _path
