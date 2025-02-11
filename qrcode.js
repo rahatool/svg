@@ -665,10 +665,10 @@ let check = (condition, message) => {
 };
 
 export let QRCode = class {
-	constructor({
+	static generate({
 		size = 256,
 		padding = 16,
-		swap = 0, /* swap the X and Y modules, some users have had issues with the QR Code */
+		swap = false, /* swap the X and Y modules, some users have had issues with the QR Code */
 		ecl = 'M',
 		foreground = '#900',
 		background = '#fff8f8',
@@ -746,9 +746,7 @@ export let QRCode = class {
 		let qrcode = new QRCodeModel(type, ecl);
 		qrcode.addData(message);
 		qrcode.make();
-	}
 
-	generate() {
 		let ns = 'http://www.w3.org/2000/svg';
 		let el = (element, attributes = {}) => {
 			element = document.createElementNS(ns, element);
