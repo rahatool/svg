@@ -56,9 +56,7 @@ let QRCodeModel = class {
 		this.dataCache = null;
 	}
 	isDark(row, col) {
-		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
-			throw new Error(row + "," + col);
-		}
+		check(row >= 0 && this.moduleCount > row && col >= 0 && this.moduleCount > col, `${row}, ${col}`);
 		return this.modules[row][col];
 	}
 	getModuleCount() {
@@ -262,9 +260,7 @@ let QRCodeModel = class {
 		for (let i = 0; i < rsBlocks.length; i++) {
 			totalDataCount += rsBlocks[i].dataCount;
 		}
-		if (buffer.getLengthInBits() > totalDataCount * 8) {
-			throw new Error("code length overflow. (" + buffer.getLengthInBits() + ">" + totalDataCount * 8 + ")");
-		}
+		check(buffer.getLengthInBits() <= totalDataCount * 8, `code length overflow. (${buffer.getLengthInBits()} > ${totalDataCount * 8})`);
 		if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
 			buffer.put(0, 4);
 		}
@@ -530,9 +526,7 @@ let QRUtil = {
 };
 let QRMath = {
 	glog(n) {
-		if (n < 1) {
-			throw new Error("glog(" + n + ")");
-		}
+		check(n >= 1, `glog(${n})`);
 		return QRMath.LOG_TABLE[n];
 	},
 	gexp(n) {
@@ -559,9 +553,7 @@ for (let i = 0; i < 255; i++) {
 
 let QRPolynomial = class {
 	constructor(num, shift) {
-		if (num.length == undefined) {
-			throw new Error(num.length + "/" + shift);
-		}
+		check(num.length != undefined, `${num.length}/${shift}`);
 		let offset = 0;
 		while (offset < num.length && num[offset] == 0) {
 			offset++;
@@ -609,9 +601,7 @@ let QRRSBlock = class {
 	static RS_BLOCK_TABLE = [[1, 26, 19], [1, 26, 16], [1, 26, 13], [1, 26, 9], [1, 44, 34], [1, 44, 28], [1, 44, 22], [1, 44, 16], [1, 70, 55], [1, 70, 44], [2, 35, 17], [2, 35, 13], [1, 100, 80], [2, 50, 32], [2, 50, 24], [4, 25, 9], [1, 134, 108], [2, 67, 43], [2, 33, 15, 2, 34, 16], [2, 33, 11, 2, 34, 12], [2, 86, 68], [4, 43, 27], [4, 43, 19], [4, 43, 15], [2, 98, 78], [4, 49, 31], [2, 32, 14, 4, 33, 15], [4, 39, 13, 1, 40, 14], [2, 121, 97], [2, 60, 38, 2, 61, 39], [4, 40, 18, 2, 41, 19], [4, 40, 14, 2, 41, 15], [2, 146, 116], [3, 58, 36, 2, 59, 37], [4, 36, 16, 4, 37, 17], [4, 36, 12, 4, 37, 13], [2, 86, 68, 2, 87, 69], [4, 69, 43, 1, 70, 44], [6, 43, 19, 2, 44, 20], [6, 43, 15, 2, 44, 16], [4, 101, 81], [1, 80, 50, 4, 81, 51], [4, 50, 22, 4, 51, 23], [3, 36, 12, 8, 37, 13], [2, 116, 92, 2, 117, 93], [6, 58, 36, 2, 59, 37], [4, 46, 20, 6, 47, 21], [7, 42, 14, 4, 43, 15], [4, 133, 107], [8, 59, 37, 1, 60, 38], [8, 44, 20, 4, 45, 21], [12, 33, 11, 4, 34, 12], [3, 145, 115, 1, 146, 116], [4, 64, 40, 5, 65, 41], [11, 36, 16, 5, 37, 17], [11, 36, 12, 5, 37, 13], [5, 109, 87, 1, 110, 88], [5, 65, 41, 5, 66, 42], [5, 54, 24, 7, 55, 25], [11, 36, 12], [5, 122, 98, 1, 123, 99], [7, 73, 45, 3, 74, 46], [15, 43, 19, 2, 44, 20], [3, 45, 15, 13, 46, 16], [1, 135, 107, 5, 136, 108], [10, 74, 46, 1, 75, 47], [1, 50, 22, 15, 51, 23], [2, 42, 14, 17, 43, 15], [5, 150, 120, 1, 151, 121], [9, 69, 43, 4, 70, 44], [17, 50, 22, 1, 51, 23], [2, 42, 14, 19, 43, 15], [3, 141, 113, 4, 142, 114], [3, 70, 44, 11, 71, 45], [17, 47, 21, 4, 48, 22], [9, 39, 13, 16, 40, 14], [3, 135, 107, 5, 136, 108], [3, 67, 41, 13, 68, 42], [15, 54, 24, 5, 55, 25], [15, 43, 15, 10, 44, 16], [4, 144, 116, 4, 145, 117], [17, 68, 42], [17, 50, 22, 6, 51, 23], [19, 46, 16, 6, 47, 17], [2, 139, 111, 7, 140, 112], [17, 74, 46], [7, 54, 24, 16, 55, 25], [34, 37, 13], [4, 151, 121, 5, 152, 122], [4, 75, 47, 14, 76, 48], [11, 54, 24, 14, 55, 25], [16, 45, 15, 14, 46, 16], [6, 147, 117, 4, 148, 118], [6, 73, 45, 14, 74, 46], [11, 54, 24, 16, 55, 25], [30, 46, 16, 2, 47, 17], [8, 132, 106, 4, 133, 107], [8, 75, 47, 13, 76, 48], [7, 54, 24, 22, 55, 25], [22, 45, 15, 13, 46, 16], [10, 142, 114, 2, 143, 115], [19, 74, 46, 4, 75, 47], [28, 50, 22, 6, 51, 23], [33, 46, 16, 4, 47, 17], [8, 152, 122, 4, 153, 123], [22, 73, 45, 3, 74, 46], [8, 53, 23, 26, 54, 24], [12, 45, 15, 28, 46, 16], [3, 147, 117, 10, 148, 118], [3, 73, 45, 23, 74, 46], [4, 54, 24, 31, 55, 25], [11, 45, 15, 31, 46, 16], [7, 146, 116, 7, 147, 117], [21, 73, 45, 7, 74, 46], [1, 53, 23, 37, 54, 24], [19, 45, 15, 26, 46, 16], [5, 145, 115, 10, 146, 116], [19, 75, 47, 10, 76, 48], [15, 54, 24, 25, 55, 25], [23, 45, 15, 25, 46, 16], [13, 145, 115, 3, 146, 116], [2, 74, 46, 29, 75, 47], [42, 54, 24, 1, 55, 25], [23, 45, 15, 28, 46, 16], [17, 145, 115], [10, 74, 46, 23, 75, 47], [10, 54, 24, 35, 55, 25], [19, 45, 15, 35, 46, 16], [17, 145, 115, 1, 146, 116], [14, 74, 46, 21, 75, 47], [29, 54, 24, 19, 55, 25], [11, 45, 15, 46, 46, 16], [13, 145, 115, 6, 146, 116], [14, 74, 46, 23, 75, 47], [44, 54, 24, 7, 55, 25], [59, 46, 16, 1, 47, 17], [12, 151, 121, 7, 152, 122], [12, 75, 47, 26, 76, 48], [39, 54, 24, 14, 55, 25], [22, 45, 15, 41, 46, 16], [6, 151, 121, 14, 152, 122], [6, 75, 47, 34, 76, 48], [46, 54, 24, 10, 55, 25], [2, 45, 15, 64, 46, 16], [17, 152, 122, 4, 153, 123], [29, 74, 46, 14, 75, 47], [49, 54, 24, 10, 55, 25], [24, 45, 15, 46, 46, 16], [4, 152, 122, 18, 153, 123], [13, 74, 46, 32, 75, 47], [48, 54, 24, 14, 55, 25], [42, 45, 15, 32, 46, 16], [20, 147, 117, 4, 148, 118], [40, 75, 47, 7, 76, 48], [43, 54, 24, 22, 55, 25], [10, 45, 15, 67, 46, 16], [19, 148, 118, 6, 149, 119], [18, 75, 47, 31, 76, 48], [34, 54, 24, 34, 55, 25], [20, 45, 15, 61, 46, 16]];
 	static getRSBlocks(typeNumber, errorCorrectLevel) {
 		let rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
-		if (rsBlock == undefined) {
-			throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
-		}
+		check(rsBlock != undefined, `bad RSBlock @ typeNumber:${typeNumber}/errorCorrectLevel:${errorCorrectLevel}`);
 		let length = rsBlock.length / 3;
 		let list = [];
 		for (let i = 0; i < length; i++) {
@@ -668,14 +658,20 @@ let QRBitBuffer = class {
 };
 let QRCodeLimitLength = [[17, 14, 11, 7], [32, 26, 20, 14], [53, 42, 32, 24], [78, 62, 46, 34], [106, 84, 60, 44], [134, 106, 74, 58], [154, 122, 86, 64], [192, 152, 108, 84], [230, 180, 130, 98], [271, 213, 151, 119], [321, 251, 177, 137], [367, 287, 203, 155], [425, 331, 241, 177], [458, 362, 258, 194], [520, 412, 292, 220], [586, 450, 322, 250], [644, 504, 364, 280], [718, 560, 394, 310], [792, 624, 442, 338], [858, 666, 482, 382], [929, 711, 509, 403], [1003, 779, 565, 439], [1091, 857, 611, 461], [1171, 911, 661, 511], [1273, 997, 715, 535], [1367, 1059, 751, 593], [1465, 1125, 805, 625], [1528, 1190, 868, 658], [1628, 1264, 908, 698], [1732, 1370, 982, 742], [1840, 1452, 1030, 790], [1952, 1538, 1112, 842], [2068, 1628, 1168, 898], [2188, 1722, 1228, 958], [2303, 1809, 1283, 983], [2431, 1911, 1351, 1051], [2563, 1989, 1423, 1093], [2699, 2099, 1499, 1139], [2809, 2213, 1579, 1219], [2953, 2331, 1663, 1273]];
 
+let check = (condition, message) => {
+	if (!condition) {
+		throw new Error(message);
+	}
+};
+
 export let QRCode = class {
 	constructor(options) {
 		this.options = {
 			dim: 256,
-			pad: 41,
+			pad: 16,
 			swp: 0, /* swap the X and Y modules, some users have had issues with the QR Code */
 			ecl: 'M',
-			pal: ['#000']
+			pal: ['#900', '#fff8f8']
 		};
 		if (options) {
 			for (let i in options) {
@@ -685,29 +681,13 @@ export let QRCode = class {
 		if (1 !== this.options.swp) {
 			this.options.swp = 0;
 		}
-		if ('string' !== typeof this.options.msg) {
-			throw new Error('Expected {msg} as string!');
-		}
-		if (0 === this.options.msg.length) {
-			/* || 7089 < this.options.content.length */
-			throw new Error('Expected {msg} should not be empty!');
-		}
-		if (!(0 < this.options.dim)) {
-			this.options.dim = 256;
-			console.warn('Expected {dim} value should be higher than zero!');
-		}
-		if (!(0 < this.options.pad)) {
-			this.options.pad = 16;
-			console.warn('Expected {pad} value should be non-negative!');
-		}
-		if (this.options.dim < this.options.pad) {
-			this.options.pad = this.options.dim;
-			console.warn('Expected {pad} value could not be bigger than {dim} value');
-		}
-		if (!_checkColor(this.options.pal[0]) || this.options.pal[1] && !_checkColor(this.options.pal[1])) {
-			this.options.pal = ['#900', '#fff8f8'];
-			console.warn('Expected {pal} value for foreground and/or background is not valid');
-		}
+		check(typeof this.options.msg == 'string', '"message" must be string');
+		check(this.options.msg.length, '"message" must not be empty');
+		/* 7089 >= this.options.content.length */
+		check(this.options.dim > 0, '"dim" value must be higher than zero');
+		check(this.options.pad >= 0, '"pad" value must be non-negative');
+		check(this.options.dim > this.options.pad, '"pad" value must not be more than "dim" value');
+		check(_checkColor(this.options.pal[0]) && (!this.options.pal[1] || _checkColor(this.options.pal[1])), '"pal" value for foreground and/or background is not valid');
 		function _checkColor(c) {
 			return /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(c);
 		}
@@ -733,9 +713,7 @@ export let QRCode = class {
 				l2 = QRCodeLimitLength.length;
 			for (let i = 0; i <= l2; i++) {
 				let table = QRCodeLimitLength[i];
-				if (!table) {
-					throw new Error("Content too long: expected " + limit + " but got " + l1);
-				}
+				check(table, `content too long: expected ${limit} but got ${l1}`);
 				switch (ecl) {
 				case "L":
 					limit = table[0];
@@ -760,9 +738,7 @@ export let QRCode = class {
 				type++;
 			}
 
-			if (type > QRCodeLimitLength.length) {
-				throw new Error('Content too long');
-			}
+			check(type <= QRCodeLimitLength.length, `content too long`);
 
 			return type;
 		}
@@ -775,7 +751,7 @@ export let QRCode = class {
 		let msg = this.options.msg,
 			ecl = _getErrorCorrectLevel(this.options.ecl),
 			type = _getTypeNumber(msg, this.options.ecl);
-		this.qrcode = new QRCodeModel(type,ecl);
+		this.qrcode = new QRCodeModel(type, ecl);
 		this.qrcode.addData(msg);
 		this.qrcode.make();
 	}
@@ -793,7 +769,7 @@ export let QRCode = class {
 		let opt = this.options,
 			bit = this.qrcode.modules,
 			len = bit.length,
-			swp = opt.swp, //( 1 == opt.swp ) ? 1 : 0,
+			swp = opt.swp,
 			_fg = opt.pal[0],
 			_bg = opt.pal[1],
 			_d = opt.dim,
@@ -814,7 +790,7 @@ export let QRCode = class {
 				}
 			}
 		}
-		let res = el('svg', {
+		let output = el('svg', {
 			'viewBox': [0, 0, _d, _d].join(' '),
 			'width': _d,
 			'height': _d,
@@ -824,14 +800,14 @@ export let QRCode = class {
 			'version': '1.1'
 		});
 		if (_bg)
-			res.append(el('path', {
+			output.append(el('path', {
 				'fill': _bg,
 				'd': 'M0,0V' + _d + 'H' + _d + 'V0H0Z'
 			}));
-		res.append(el('path', {
+		output.append(el('path', {
 			'transform': 'matrix(' + _m + ')',
 			'd': _path
 		}));
-		return res;
+		return output;
 	}
 };
