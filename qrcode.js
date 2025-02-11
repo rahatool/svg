@@ -666,34 +666,10 @@ let check = (condition, message) => {
 
 export let QRCode = class {
 	constructor(options) {
-		this.options = {
-			size: 256,
-			padding: 16,
-			swap: 0, /* swap the X and Y modules, some users have had issues with the QR Code */
-			ecl: 'M',
-			foreground: '#900',
-			background: '#fff8f8',
-		};
-		if (options) {
-			for (let i in options) {
-				this.options[i] = options[i];
-			}
-		}
-		if (1 !== this.options.swap) {
-			this.options.swap = 0;
-		}
-		check(typeof this.options.message == 'string', '"message" must be string');
-		check(this.options.message.length, '"message" must not be empty');
-		/* 7089 >= this.options.content.length */
-		check(this.options.size > 0, '"size" value must be higher than zero');
-		check(this.options.padding >= 0, '"padding" value must be non-negative');
-		check(this.options.size > this.options.padding, '"padding" value must not be more than "size" value');
-		check(_checkColor(this.options.foreground), '"foreground" value is not valid');
-		check(!this.options.background || _checkColor(this.options.background), '"background" value is not valid');
-		function _checkColor(c) {
+		let _checkColor = (c) => {
 			return /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(c);
-		}
-		function _getErrorCorrectLevel(ecl) {
+		};
+		let _getErrorCorrectLevel = (ecl) => {
 			switch (ecl) {
 			case 'L':
 				return QRErrorCorrectLevel.L;
@@ -706,8 +682,8 @@ export let QRCode = class {
 			default:
 				throw new Error(`unknwon error correction level: ${ecl}`);
 			}
-		}
-		function _getTypeNumber(message, ecl) {
+		};
+		let _getTypeNumber = (message, ecl) => {
 			let type = 1,
 				limit = 0,
 				l1 = _getUTF8Length(message),
@@ -742,13 +718,35 @@ export let QRCode = class {
 			check(type <= QRCodeLimitLength.length, `content too long`);
 
 			return type;
-		}
-		function _getUTF8Length(message) {
-			let res = encodeURI(message).toString().replace(/\%[0-9a-fA-F]{2}/g, 'a');
-			return res.length + (res.length != message ? 3 : 0);
-		}
+		};
+		let _getUTF8Length = (message) => {
+			let result = encodeURI(message).toString().replace(/\%[0-9a-fA-F]{2}/g, 'a');
+			return result.length + (result.length != message ? 3 : 0);
+		};
 		
-		// Generate QR Code matrix
+		this.options = {
+			size: 256,
+			padding: 16,
+			swap: 0, /* swap the X and Y modules, some users have had issues with the QR Code */
+			ecl: 'M',
+			foreground: '#900',
+			background: '#fff8f8',
+		};
+		if (options) {
+			for (let i in options) {
+				this.options[i] = options[i];
+			}
+		}
+		check(typeof this.options.message == 'string', '"message" must be string');
+		check(this.options.message.length, '"message" must not be empty');
+		/* 7089 >= this.options.content.length */
+		check(this.options.size > 0, '"size" value must be higher than zero');
+		check(this.options.padding >= 0, '"padding" value must be non-negative');
+		check(this.options.size > this.options.padding, '"padding" value must not be more than "size" value');
+		check(_checkColor(this.options.foreground), '"foreground" value is not valid');
+		check(!this.options.background || _checkColor(this.options.background), '"background" value is not valid');
+		
+		// generate QR Code matrix
 		let message = this.options.message,
 			ecl = _getErrorCorrectLevel(this.options.ecl),
 			type = _getTypeNumber(message, this.options.ecl);
