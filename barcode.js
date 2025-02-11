@@ -38,8 +38,8 @@ let isHex = (c) => {
 	return /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(c);
 };
 
-export let BARCode = class {
-	static generate({message, width = 320, height = 80, horizontalPadding = 20, verticalPadding = 16, foreground = '#000', background}) {
+export let BarCode = class {
+	static generate({message, width = 320, height = 80, horizontalPadding = 20, verticalPadding = 16, foreground = '#000' /* line color */, background}) {
 		let w = abs(width),
 			h = abs(height),
 			px = abs(horizontalPadding),
