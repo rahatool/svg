@@ -688,7 +688,7 @@ export let QRCode = class {
 			case 'H':
 				return QRErrorCorrectLevel.H;
 			default:
-				throw new Error(`unknwon error correction level: ${ecl}`);
+				throw new Error(`unknown error correction level: ${ecl}`);
 			}
 		};
 		let _getTypeNumber = (message, ecl) => {
@@ -742,9 +742,7 @@ export let QRCode = class {
 		check(!background || _checkColor(background), '"background" value is not valid');
 		
 		// generate QR Code matrix
-		ecl = _getErrorCorrectLevel(ecl);
-		let type = _getTypeNumber(message, ecl);
-		let qrcode = new QRCodeModel(type, ecl);
+		let qrcode = new QRCodeModel(_getTypeNumber(message, _getErrorCorrectLevel(ecl)), ecl);
 		qrcode.addData(message);
 		qrcode.make();
 
