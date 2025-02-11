@@ -18,6 +18,7 @@ document.body.append(
 	})
 );
 ```
+- **`horizontalPadding` or `verticalPadding`**: Set `0` to discard padding. If (any) padding value is more than relative dimension (`width` or `height`) value then barcode will be rotated by 180 degrees respectively.
 
 ## QRCode
 ```js
