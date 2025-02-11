@@ -2,28 +2,29 @@ let c128 = (c) => {
 	c = c.charCodeAt(0);
 	return (c > 126) ? (128 == c) ? 0 : c - 50 : (c > 32) ? c - 32 : 0;
 };
-let check = (o) => {
-	let r = 0,
-		c = o.length;
-	while (c)
-		r += (c--) * c128(o[c]);
-	return r % 103;
-};
-let def = (i) => {
-	if (106 < i) {
-		console.warn('BarCode: "bad char" was used and it was replaced by X');
-		i = 56;
-	}
-	return [1740, 1644, 1638, 1176, 1164, 1100, 1224, 1220, 1124, 1608, 1604, 1572, 1436, 1244, 1230, 1484, 1260, 1254, 1650, 1628, 1614, 1764, 1652, 1902, 1868, 1836, 1830, 1892, 1844, 1842, 1752, 1734, 1590, 1304, 1112, 1094, 1416, 1128, 1122, 1672, 1576, 1570, 1464, 1422, 1134, 1496, 1478, 1142, 1910, 1678, 1582, 1768, 1762, 1774, 1880, 1862, 1814, 1896, 1890, 1818, 1914, 1602, 1930, 1328, 1292, 1200, 1158, 1068, 1062, 1424, 1412, 1232, 1218, 1076, 1074, 1554, 1616, 1978, 1556, 1146, 1340, 1212, 1182, 1508, 1268, 1266, 1956, 1940, 1938, 1758, 1782, 1974, 1400, 1310, 1118, 1512, 1506, 1960, 1954, 1502, 1518, 1886, 1966, 1668, 1680, 1692, 6379][i].toString(2);
-};
-let bin = (o) => {
-	let r = [],
-		c = o.length;
-	while (c)
-		r[--c] = parseInt(o[c]);
-	return r;
-};
 let encode = (o) => {
+	let check = (o) => {
+		let r = 0,
+			c = o.length;
+		while (c)
+			r += (c--) * c128(o[c]);
+		return r % 103;
+	};
+	let def = (i) => {
+		if (106 < i) {
+			console.warn('BarCode: "bad char" was used and it was replaced by X');
+			i = 56;
+		}
+		return [1740, 1644, 1638, 1176, 1164, 1100, 1224, 1220, 1124, 1608, 1604, 1572, 1436, 1244, 1230, 1484, 1260, 1254, 1650, 1628, 1614, 1764, 1652, 1902, 1868, 1836, 1830, 1892, 1844, 1842, 1752, 1734, 1590, 1304, 1112, 1094, 1416, 1128, 1122, 1672, 1576, 1570, 1464, 1422, 1134, 1496, 1478, 1142, 1910, 1678, 1582, 1768, 1762, 1774, 1880, 1862, 1814, 1896, 1890, 1818, 1914, 1602, 1930, 1328, 1292, 1200, 1158, 1068, 1062, 1424, 1412, 1232, 1218, 1076, 1074, 1554, 1616, 1978, 1556, 1146, 1340, 1212, 1182, 1508, 1268, 1266, 1956, 1940, 1938, 1758, 1782, 1974, 1400, 1310, 1118, 1512, 1506, 1960, 1954, 1502, 1518, 1886, 1966, 1668, 1680, 1692, 6379][i].toString(2);
+	};
+	let bin = (o) => {
+		let r = [],
+			c = o.length;
+		while (c)
+			r[--c] = parseInt(o[c]);
+		return r;
+	};
+
 	let r = [],
 		c = o.length;
 	while (c) {
@@ -37,7 +38,7 @@ let abs = (o) => {
 let isHex = (c) => {
 	return /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(c);
 };
-let assert = (condition, message) => {
+let check = (condition, message) => {
 	if (!condition) {
 		throw new Error(message);
 	}
@@ -52,7 +53,7 @@ export let BarCode = class {
 		let sx = 1,
 			sy = 1;
 
-		assert(typeof message == 'string' && message.length, '"message" should not be empty string');
+		check(typeof message == 'string' && message.length, '"message" should not be empty string');
 		message = encode(message);
 		let {length} = message;
 
@@ -76,8 +77,8 @@ export let BarCode = class {
 			dir = 1;
 		}
 
-		assert(w > px, '"horizontalPadding" value cannot be bigger than "width" value');
-		assert(h > py, '"verticalPadding" value cannot be bigger than "height" value');
+		check(w > px, '"horizontalPadding" value cannot be bigger than "width" value');
+		check(h > py, '"verticalPadding" value cannot be bigger than "height" value');
 
 		if (dir) {
 			sy = length;
@@ -88,8 +89,8 @@ export let BarCode = class {
 		sx = ((w - (2 * px)) / sx).toFixed(4);
 		sy = ((h - (2 * py)) / sy).toFixed(4);
 
-		assert(isHex(foreground), '"foreground" is required');
-		assert(!background || isHex(background), 'type of "background" is not a hex color');
+		check(isHex(foreground), '"foreground" is required');
+		check(!background || isHex(background), 'type of "background" is not a hex color');
 
 		let ns = 'http://www.w3.org/2000/svg';
 		let svg = (element, attributes = {}) => {
