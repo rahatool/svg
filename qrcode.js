@@ -742,7 +742,7 @@ export let QRCode = class {
 		check(!background || _checkColor(background), '"background" value is not valid');
 		
 		// generate QR Code matrix
-		let qrcode = new QRCodeModel(_getTypeNumber(message, _getErrorCorrectLevel(ecl)), ecl);
+		let qrcode = new QRCodeModel(_getTypeNumber(message, ecl), _getErrorCorrectLevel(ecl));
 		qrcode.addData(message);
 		qrcode.make();
 
