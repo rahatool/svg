@@ -665,7 +665,14 @@ let check = (condition, message) => {
 };
 
 export let QRCode = class {
-	constructor(options) {
+	constructor({
+		size = 256,
+		padding = 16,
+		swap = 0, /* swap the X and Y modules, some users have had issues with the QR Code */
+		ecl = 'M',
+		foreground = '#900',
+		background = '#fff8f8',
+	}) {
 		let _checkColor = (c) => {
 			return /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(c);
 		};
@@ -724,35 +731,21 @@ export let QRCode = class {
 			return result.length + (result.length != message ? 3 : 0);
 		};
 		
-		this.options = {
-			size: 256,
-			padding: 16,
-			swap: 0, /* swap the X and Y modules, some users have had issues with the QR Code */
-			ecl: 'M',
-			foreground: '#900',
-			background: '#fff8f8',
-		};
-		if (options) {
-			for (let i in options) {
-				this.options[i] = options[i];
-			}
-		}
-		check(typeof this.options.message == 'string', '"message" must be string');
-		check(this.options.message.length, '"message" must not be empty');
-		/* 7089 >= this.options.content.length */
-		check(this.options.size > 0, '"size" value must be higher than zero');
-		check(this.options.padding >= 0, '"padding" value must be non-negative');
-		check(this.options.size > this.options.padding, '"padding" value must not be more than "size" value');
-		check(_checkColor(this.options.foreground), '"foreground" value is not valid');
-		check(!this.options.background || _checkColor(this.options.background), '"background" value is not valid');
+		check(typeof message == 'string', '"message" must be string');
+		check(message.length, '"message" must not be empty');
+		/* 7089 >= content.length */
+		check(size > 0, '"size" value must be higher than zero');
+		check(padding >= 0, '"padding" value must be non-negative');
+		check(size > padding, '"padding" value must not be more than "size" value');
+		check(_checkColor(foreground), '"foreground" value is not valid');
+		check(!background || _checkColor(background), '"background" value is not valid');
 		
 		// generate QR Code matrix
-		let message = this.options.message,
-			ecl = _getErrorCorrectLevel(this.options.ecl),
-			type = _getTypeNumber(message, this.options.ecl);
-		this.qrcode = new QRCodeModel(type, ecl);
-		this.qrcode.addData(message);
-		this.qrcode.make();
+		ecl = _getErrorCorrectLevel(ecl);
+		let type = _getTypeNumber(message, ecl);
+		let qrcode = new QRCodeModel(type, ecl);
+		qrcode.addData(message);
+		qrcode.make();
 	}
 
 	generate() {
@@ -764,9 +757,8 @@ export let QRCode = class {
 			}
 			return element;
 		};
-		let bit = this.qrcode.modules,
+		let bit = qrcode.modules,
 			length = bit.length,
-			{swap, foreground, background, size, padding} = this.options,
 			_s = ((size - (2 * padding)) / length).toFixed(4),
 			_m = [_s, 0, 0, _s, padding, padding],
 			_path = '';
